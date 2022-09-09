@@ -35,6 +35,16 @@ namespace Osiris_I18n
             }
         }
 
+        [HarmonyPatch(typeof(LocalizationCSV), nameof(LocalizationCSV.LoadFromCSV))]
+        class LocalizationCSV_LoadFromCSV_Patch
+        {
+            public static bool Prefix(ref Dictionary<string, string> __result, string streamingAssetsRelativeFilePath)
+            {
+                __result = LoadLocalization.LoadFromCSV(streamingAssetsRelativeFilePath);
+                return false;
+            }
+        }
+
         [HarmonyPatch(typeof(LocalizationManager), nameof(LocalizationManager.GetLocalizedString))]
         class LocalizationManager_GetLocalizedString_Patch
         {

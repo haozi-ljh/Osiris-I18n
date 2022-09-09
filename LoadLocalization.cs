@@ -161,9 +161,13 @@ namespace Osiris_I18n
 		public static Dictionary<string, string> LoadFromCSV(string streamingAssetsRelativeFilePath)
 		{
 			string text;
-			if(File.Exists(streamingAssetsRelativeFilePath) || File.Exists(streamingAssetsRelativeFilePath + ".csv"))
+			if(File.Exists(streamingAssetsRelativeFilePath))
             {
 				text = File.ReadAllText(streamingAssetsRelativeFilePath);
+			}
+			else if(File.Exists(streamingAssetsRelativeFilePath + ".csv"))
+            {
+				text = File.ReadAllText(streamingAssetsRelativeFilePath + ".csv");
 			}
             else
             {

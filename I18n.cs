@@ -337,22 +337,22 @@ namespace Osiris_I18n
                         RectTransform rtf = tf.GetComponent<RectTransform>();
                         rtf.sizeDelta = new Vector2(rtf.sizeDelta.x + configbutton.GetComponent<RectTransform>().sizeDelta.x, configbutton.GetComponent<RectTransform>().sizeDelta.y);
                     }
+                    for (int i = 0; i < configbutton.onClick.GetPersistentEventCount(); i++)
+                    {
+                        configbutton.onClick.SetPersistentListenerState(i, UnityEngine.Events.UnityEventCallState.Off);
+                    }
+                    configbutton.onClick.AddListener(() => { onconfigGUI = true; });
                 }
             }
             
-            [HarmonyPatch(typeof(MainMenu), "Update", new Type[] { })]
-            class MainMenu_BringInMain_Patch
+            [HarmonyPatch(typeof(MainMenu), "Update")]
+            class MainMenu_Update_Patch
             {
                 public static void Postfix()
                 {
                     Text cbt = configbutton.GetComponentInChildren<Text>();
                     cbt.text = "插件设置";
                     cbt.color = Color.yellow;
-                    for (int i = 0; i < configbutton.onClick.GetPersistentEventCount(); i++)
-                    {
-                        configbutton.onClick.SetPersistentListenerState(i, UnityEngine.Events.UnityEventCallState.Off);
-                    }
-                    configbutton.onClick.AddListener(() => { onconfigGUI = true; });
                 }
             }
 
