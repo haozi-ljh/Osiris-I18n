@@ -1,0 +1,38 @@
+name: Output Release Info
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          repository: haozi-ljh/Osiris-I18n-Info
+        
+      - name: Output Version Info
+        id: get_version
+        run: |
+          version=$(echo ${{ github.ref }} | cut -c 11-)
+          echo "VERSION=$version" >> $GITHUB_OUTPUT
+          echo [Version:$version]New Release Upload, Date $(date +%Y.%m.%d-%T) >> VersionInfo
+          mkdir info
+          mv ./VersionInfo ./info
+		      release_id=$(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.KEY }}" https://api.github.com/repos/haozi-ljh/testactions/releases/tags/${version} | grep '"id":' | awk '{print $2}' | awk -F ',' '{print $1}' | awk 'NR==1{print}')
+          asset_id=$(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.KEY }}" https://api.github.com/repos/haozi-ljh/testactions/releases/${release_id}/assets | grep '"id":' | awk '{print $2}' | awk -F ',' '{print $1}' | awk 'NR==1{print}')
+          curl -X PATCH -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.KEY }}" https://api.github.com/repos/haozi-ljh/testactions/releases/assets/${asset_id} -d '{"name":"Osiris-I18n_'${version}'.zip"}'
+          
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          repository-name: haozi-ljh/Osiris-I18n-Info
+          token: ${{ secrets.OSIRISI18NINFO_KEY }}
+          branch: main
+          folder: ./info
+          commit-message: New Version Upload:${{ steps.get_version.outputs.VERSION }}
+          clean: false
