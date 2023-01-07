@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+        with:
+          repository: haozi-ljh/Osiris-I18n-Info
         
       - name: Output Version Info
         id: get_version
