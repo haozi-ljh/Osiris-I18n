@@ -30,6 +30,8 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
+          repository-name: haozi-ljh/Osiris-I18n-Info
+          token: ${{ secrets.OSIRISI18NINFO_KEY }}
           branch: main
           folder: ./info
           commit-message: New Version Upload:${{ steps.get_version.outputs.VERSION }}
