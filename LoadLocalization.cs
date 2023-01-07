@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+//原版代码优化
 namespace Osiris_I18n
 {
 
@@ -20,6 +21,8 @@ namespace Osiris_I18n
 
 		[NonSerialized]
 		private Dictionary<string, string> loadedLanguage;
+
+		private List<string> ens = new List<string>();
 
 		public static LoadLocalization Instance
 		{
@@ -125,7 +128,7 @@ namespace Osiris_I18n
 			return flag;
 		}
 
-		public Dictionary<string, string> getloadedLanguage()
+		public Dictionary<string, string> GetLoadedLanguage()
 		{
 			return loadedLanguage;
 		}
@@ -145,16 +148,24 @@ namespace Osiris_I18n
 			{
 				return englishString;
 			}
-			string key = englishString.Replace("\r", "");
+			string key = englishString.Replace("\r\n", "\n").Replace("\r", "\n");
 			if (loadedLanguage.ContainsKey(key))
 			{
 				return loadedLanguage[key];
 			}
-			/*System.IO.FileStream fs = new System.IO.FileStream("C:\\en.txt", System.IO.FileMode.Append);
-			byte[] db = System.Text.Encoding.Default.GetBytes("\"" +englishString +"\"\n");
-			fs.Write(db, 0, db.Length);
-			fs.Flush();
-			fs.Close();*/
+            if (I18n.onEnOut)
+            {
+				System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("(^x)?[0-9\\+\\-\\*\\/±%|\\\\\\(\\)\\?\\!\\.\\* ]"), regexzh = new System.Text.RegularExpressions.Regex("[\u4e00-\u9fff]");
+				if (!string.IsNullOrEmpty(regex.Replace(englishString, "")) && !regexzh.IsMatch(englishString) && !ens.Contains(englishString))
+				{
+					ens.Add(englishString);
+					FileStream fs = new FileStream(Path.Combine(I18n.enoutPath, "EnglishOutput.txt"), FileMode.Append);
+					byte[] db = System.Text.Encoding.Default.GetBytes("\"" + englishString + "\"\n");
+					fs.Write(db, 0, db.Length);
+					fs.Flush();
+					fs.Close();
+				}
+			}
 			return englishString;
 		}
 
@@ -177,7 +188,7 @@ namespace Osiris_I18n
 			string com;
 			foreach (string s in text.Split(';'))
 			{
-				com = s.Replace("\r", "");
+				com = s.Replace("\r\n", "\n").Replace("\r", "\n");
 				int cut = com.IndexOf("\",\"");
 				int node = com.IndexOf('"');
 				if (cut - node - 2 < 0)

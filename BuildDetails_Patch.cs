@@ -1,35 +1,29 @@
-﻿using HarmonyLib;
-
+﻿
 namespace Osiris_I18n
 {
     public class BuildDetails_Patch
     {
 
-        [HarmonyPatch(typeof(BuildDetails), "name", MethodType.Getter)]
-        class BuildDetails_name_Patch
+        public BuildDetails_Patch()
         {
-            public static void Postfix(ref string __result)
-            {
-                __result = LoadLocalization.Instance.GetLocalizedString(__result);
-            }
+            PatcherManager.Add(new Patcher(typeof(BuildDetails), "name", PropertyType.get, PatchType.postfix, GetType().GetMethod("BuildDetails_name_Patch")));
+            PatcherManager.Add(new Patcher(typeof(BuildDetails), "title", PropertyType.get, PatchType.postfix, GetType().GetMethod("BuildDetails_title_Patch")));
+            PatcherManager.Add(new Patcher(typeof(BuildDetails), "description", PropertyType.get, PatchType.postfix, GetType().GetMethod("BuildDetails_description_Patch")));
         }
 
-        [HarmonyPatch(typeof(BuildDetails), "title", MethodType.Getter)]
-        class BuildDetails_title_Patch
+        public static void BuildDetails_name_Patch(ref string __result)
         {
-            public static void Postfix(ref string __result)
-            {
-                __result = LoadLocalization.Instance.GetLocalizedString(__result);
-            }
+            __result = LoadLocalization.Instance.GetLocalizedString(__result);
         }
 
-        [HarmonyPatch(typeof(BuildDetails), "description", MethodType.Getter)]
-        class BuildDetails_description_Patch
+        public static void BuildDetails_title_Patch(ref string __result)
         {
-            public static void Postfix(ref string __result)
-            {
-                __result = LoadLocalization.Instance.GetLocalizedString(__result);
-            }
+            __result = LoadLocalization.Instance.GetLocalizedString(__result);
+        }
+
+        public static void BuildDetails_description_Patch(ref string __result)
+        {
+            __result = LoadLocalization.Instance.GetLocalizedString(__result);
         }
 
     }

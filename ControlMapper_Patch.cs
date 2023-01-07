@@ -1,18 +1,19 @@
-﻿using HarmonyLib;
+﻿using System;
 using UnityEngine;
 
 namespace Osiris_I18n
 {
-    class ControlMapper_Patch
+    public class ControlMapper_Patch
     {
 
-        [HarmonyPatch(typeof(Rewired.UI.ControlMapper.ControlMapper), "CreateLabel", new System.Type[] { typeof(UnityEngine.GameObject), typeof(string), typeof(UnityEngine.Transform), typeof(UnityEngine.Vector2) })]
-        class ControlMapper_CreateLabel_Patch
+        public ControlMapper_Patch()
         {
-            public static void Prefix(GameObject prefab, ref string labelText, Transform parent, Vector2 offset)
-            {
-                labelText = LoadLocalization.Instance.GetLocalizedString(labelText);
-            }
+            PatcherManager.Add(new Patcher(typeof(Rewired.UI.ControlMapper.ControlMapper), "CreateLabel", new Type[] { typeof(GameObject), typeof(string), typeof(Transform), typeof(Vector2) }, PatchType.prefix, GetType().GetMethod("ControlMapper_CreateLabel_Patch")));
+        }
+
+        public static void ControlMapper_CreateLabel_Patch(GameObject prefab, ref string labelText, Transform parent, Vector2 offset)
+        {
+            labelText = LoadLocalization.Instance.GetLocalizedString(labelText);
         }
 
     }

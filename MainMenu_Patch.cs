@@ -1,53 +1,49 @@
-﻿using HarmonyLib;
-using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
 namespace Osiris_I18n
 {
-    class MainMenu_Patch
+    public class MainMenu_Patch
     {
 
-		[HarmonyPatch(typeof(MainMenu), "JoinServer")]
-		class MainMenu_JoinServer_Patch
-        {
-			public static void Postfix(MainMenu __instance)
-            {
-				__instance.launchButtonText.text = LoadLocalization.Instance.GetLocalizedString(__instance.launchButtonText.text);
-            }
-        }
-
-		[HarmonyPatch(typeof(MainMenu), "LoadFirstScene")]
-		class MainMenu_LoadFirstScene_Patch
+		private static UnityAction<Scene, LoadSceneMode> localizationFirstScene = delegate (Scene scene, LoadSceneMode mode)
 		{
-			static UnityAction<Scene, LoadSceneMode> localizationFirstScene = delegate (Scene scene, LoadSceneMode mode)
+			if (scene.name.Contains("Intro_Cinematic"))
 			{
-				if (scene.name.IndexOf("Intro_Cinematic") >= 0)
+				GameObject[] g = scene.GetRootGameObjects();
+				for (int i = 0; i < g.Length; i++)
 				{
-					GameObject[] g = scene.GetRootGameObjects();
-					for (int i = 0; i < g.Length; i++)
+					MonoBehaviour[] m = g[i].GetComponentsInChildren<MonoBehaviour>();
+					for (int ii = 0; ii < m.Length; ii++)
 					{
-						MonoBehaviour[] m = g[i].GetComponentsInChildren<MonoBehaviour>();
-						for (int ii = 0; ii < m.Length; ii++)
+						Text[] t = m[ii].GetComponentsInChildren<Text>();
+						for (int iii = 0; iii < t.Length; iii++)
 						{
-							Text[] t = m[ii].GetComponentsInChildren<Text>();
-							for (int iii = 0; iii < t.Length; iii++)
-							{
-								t[iii].fontSize = 35;
-								t[iii].text = LoadLocalization.Instance.GetLocalizedString(t[iii].text);
-							}
+							t[iii].fontSize = 35;
+							t[iii].text = LoadLocalization.Instance.GetLocalizedString(t[iii].text);
 						}
 					}
 				}
-				SceneManager.sceneLoaded -= localizationFirstScene;
-			};
-
-			public static void Prefix()
-			{
-				SceneManager.sceneLoaded += localizationFirstScene;
 			}
+			SceneManager.sceneLoaded -= localizationFirstScene;
+		};
+
+		public MainMenu_Patch()
+        {
+			PatcherManager.Add(new Patcher(typeof(MainMenu), "JoinServer", PatchType.postfix, GetType().GetMethod("MainMenu_JoinServer_Patch")));
+			PatcherManager.Add(new Patcher(typeof(MainMenu), "LoadFirstScene", PatchType.prefix, GetType().GetMethod("MainMenu_LoadFirstScene_Patch")));
+		}
+
+		public static void MainMenu_JoinServer_Patch(MainMenu __instance)
+		{
+			__instance.launchButtonText.text = LoadLocalization.Instance.GetLocalizedString(__instance.launchButtonText.text);
+		}
+
+		public static void MainMenu_LoadFirstScene_Patch()
+		{
+			SceneManager.sceneLoaded += localizationFirstScene;
 		}
 
 	}

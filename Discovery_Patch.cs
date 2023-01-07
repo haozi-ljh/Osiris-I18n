@@ -7,51 +7,46 @@ using System.Reflection.Emit;
 namespace Osiris_I18n
 {
     //图鉴
-    class Discovery_Patch
+    public class Discovery_Patch
     {
 
-        [HarmonyPatch(typeof(DiscoveryCategoryLoader), "ConstructUI")]
-        class DiscoveryCategoryLoader_ConstructUI_Patch
+        public Discovery_Patch()
         {
-            public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                return DiscoveryDetails_Patch(instructions);
-            }
+            PatcherManager.Add(new Patcher(typeof(DiscoveryCategoryLoader), "ConstructUI", PatchType.transpiler, GetType().GetMethod("DiscoveryCategoryLoader_ConstructUI_Patch_Transpiler")));
+            PatcherManager.Add(new Patcher(typeof(DiscoveryDetailsPanel), "UpdateDetails", PatchType.postfix, GetType().GetMethod("DiscoveryDetailsPanel_UpdateDetails_Patch")));
+            PatcherManager.Add(new Patcher(typeof(PopupMessage), "SetDiscovery", PatchType.transpiler, GetType().GetMethod("PopupMessage_SetDiscovery_Patch_Transpiler")));
         }
 
-        [HarmonyPatch(typeof(DiscoveryDetailsPanel), nameof(DiscoveryDetailsPanel.UpdateDetails))]
-        class DiscoveryDetailsPanel_UpdateDetails_Patch
+        public static IEnumerable<CodeInstruction> DiscoveryCategoryLoader_ConstructUI_Patch_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            public static void Postfix(DiscoveryDetailsPanel __instance)
+            return DiscoveryDetails_Transpiler(instructions);
+        }
+
+        public static void DiscoveryDetailsPanel_UpdateDetails_Patch(DiscoveryDetailsPanel __instance)
+        {
+            if (!string.IsNullOrEmpty(__instance.dateTimeDiscovered.text))
             {
-                if (!string.IsNullOrEmpty(__instance.dateTimeDiscovered.text))
+                if (__instance.dateTimeDiscovered.text.Contains("UTC"))
                 {
-                    if (__instance.dateTimeDiscovered.text.IndexOf("UTC") >= 0)
-                    {
-                        __instance.dateTimeDiscovered.text = __instance.dateTimeDiscovered.text.Replace("Discovered: UTC ", LoadLocalization.Instance.GetLocalizedString("Discovered: UTC "));
-                    }
-                    else
-                    {
-                        __instance.dateTimeDiscovered.text = LoadLocalization.Instance.GetLocalizedString(__instance.dateTimeDiscovered.text);
-                    }
+                    __instance.dateTimeDiscovered.text = __instance.dateTimeDiscovered.text.Replace("Discovered: UTC ", LoadLocalization.Instance.GetLocalizedString("Discovered: UTC "));
                 }
-                if (!string.IsNullOrEmpty(__instance.description.text))
+                else
                 {
-                    __instance.description.text = __instance.description.text.Replace("Hardness: ", LoadLocalization.Instance.GetLocalizedString("Hardness: ")).Replace("Density: ", LoadLocalization.Instance.GetLocalizedString("Density: "));
+                    __instance.dateTimeDiscovered.text = LoadLocalization.Instance.GetLocalizedString(__instance.dateTimeDiscovered.text);
                 }
             }
-        }
-
-        [HarmonyPatch(typeof(PopupMessage), "SetDiscovery")]
-        class PopupMessage_SetDiscovery_Patch
-        {
-            public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            if (!string.IsNullOrEmpty(__instance.description.text))
             {
-                return DiscoveryDetails_Patch(instructions);
+                __instance.description.text = __instance.description.text.Replace("Hardness: ", LoadLocalization.Instance.GetLocalizedString("Hardness: ")).Replace("Density: ", LoadLocalization.Instance.GetLocalizedString("Density: "));
             }
         }
 
-        private static IEnumerable<CodeInstruction> DiscoveryDetails_Patch(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> PopupMessage_SetDiscovery_Patch_Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return DiscoveryDetails_Transpiler(instructions);
+        }
+
+        private static IEnumerable<CodeInstruction> DiscoveryDetails_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
 
